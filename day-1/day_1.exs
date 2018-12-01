@@ -1,36 +1,4 @@
-defmodule Device do
-  def frequency_shift(deltas) do
-    List.foldl(deltas, 0, fn (x, a) -> a + x end)
-  end
-
-  def calibrate(deltas) do
-    calibrate(deltas, 0, MapSet.new([0]))
-  end
-
-  def calibrate([delta | deltas], current_frequency, frequencies) do
-    new_frequency = current_frequency + delta
-    if MapSet.member?(frequencies, new_frequency) do
-      new_frequency
-    else
-      calibrate(
-        deltas ++ [delta],
-        new_frequency,
-        MapSet.put(frequencies, new_frequency)
-      )
-    end
-  end
-end
-
-IO.puts Device.frequency_shift([+1, +1, +1]) == 3
-IO.puts Device.frequency_shift([+1, +1, -2]) == 0
-IO.puts Device.frequency_shift([-1, -2, -3]) == -6
-IO.puts Device.frequency_shift([+1, -2, +3, +1]) == 3
-
-IO.puts Device.calibrate([+1, -2, +3, +1]) == 2
-IO.puts Device.calibrate([+1, -1]) == 0
-IO.puts Device.calibrate([+3, +3, +4, -2, -4]) == 10
-IO.puts Device.calibrate([-6, +3, +8, +5, -6]) == 5
-IO.puts Device.calibrate([+7, +7, -2, -7, -4]) == 14
+Code.require_file("device.exs", ".")
 
 input = """
 +3
