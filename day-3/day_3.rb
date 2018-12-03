@@ -50,7 +50,7 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-File.open(File.expand_path("./input.txt")) do |file|
+File.open(File.expand_path("input.txt", __dir__)) do |file|
   puts FabricAnalyzer.overlap(file)
   file.rewind
   puts FabricAnalyzer.pristine_claims(file)
