@@ -3,7 +3,7 @@ require_relative "./day_3"
 
 describe FabricAnalyzer do
   let(:input) do
-    StringIO.new <<~INPUT
+    <<~INPUT.split("\n")
       #1 @ 1,3: 4x4
       #2 @ 3,1: 4x4
       #3 @ 5,5: 2x2

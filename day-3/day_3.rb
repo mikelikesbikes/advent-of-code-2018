@@ -1,6 +1,6 @@
 module FabricAnalyzer
-  def pristine_claims(io)
-    read_claims(io)
+  def pristine_claims(lines)
+    read_claims(lines)
       .yield_self { |claims| [claims, build_claims_map(claims)] }
       .yield_self do |claims, claims_map|
         claim = claims.find do |claim|
@@ -10,15 +10,14 @@ module FabricAnalyzer
       end
   end
 
-  def overlap(io)
-    read_claims(io)
+  def overlap(lines)
+    read_claims(lines)
       .yield_self { |claims| build_claims_map(claims) }
       .count { |_, v| v > 1 }
   end
 
-  def read_claims(io)
-    io.readlines
-      .map { |line| parse(line) }
+  def read_claims(lines)
+    lines.map { |line| parse(line) }
   end
 
   def build_claims_map(claims)
@@ -50,8 +49,7 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-File.open(File.expand_path("input.txt", __dir__)) do |file|
-  puts FabricAnalyzer.overlap(file)
-  file.rewind
-  puts FabricAnalyzer.pristine_claims(file)
-end
+input = File.read(File.expand_path("input.txt", __dir__)).split("\n")
+
+puts FabricAnalyzer.overlap(input)
+puts FabricAnalyzer.pristine_claims(input)
