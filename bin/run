@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require "benchmark"
+include Benchmark
+
+day = ARGV.shift.gsub(/\D/, "")
+
+puts(Benchmark.measure(CAPTION) do
+  puts %x(ruby day-#{day}/day_#{day}.rb)
+end)
