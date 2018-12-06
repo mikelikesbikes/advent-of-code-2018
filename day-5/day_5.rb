@@ -24,7 +24,8 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-input = File.read(File.expand_path("../input.txt", __FILE__)).strip
+filename = ARGV.shift || File.expand_path("input.txt", __dir__)
+input = File.read(filename).strip
 
 puts AlchemicalReductor.perform(input)
 puts AlchemicalReductor.perform_optimal(input)

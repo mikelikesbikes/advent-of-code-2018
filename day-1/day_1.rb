@@ -30,7 +30,8 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-input = File.read(File.expand_path("input.txt", __dir__)).split("\n").map(&:to_i)
+filename = ARGV.shift || File.expand_path("input.txt", __dir__)
+input = File.read(filename).split("\n").map(&:to_i)
 
 puts DeviceCalibration.new(input).frequency_drift
 puts DeviceCalibration.new(input).calibrate

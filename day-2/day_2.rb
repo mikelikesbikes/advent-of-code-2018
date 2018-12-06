@@ -38,7 +38,8 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-input = File.read(File.expand_path("input.txt", __dir__)).split("\n")
+filename = ARGV.shift || File.expand_path("input.txt", __dir__)
+input = File.read(filename).split("\n")
 
 puts BoxScanner.checksum(input)
 puts BoxScanner.common_letters(input)

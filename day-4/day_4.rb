@@ -58,7 +58,8 @@ end
 
 return unless $PROGRAM_NAME == __FILE__
 
-input = File.read(File.expand_path("../input.txt", __FILE__)).strip.split("\n")
+filename = ARGV.shift || File.expand_path("input.txt", __dir__)
+input = File.read(filename).strip.split("\n")
 
 puts ScheduleAnalyzer.select_sleepiest_guard(input)
 puts ScheduleAnalyzer.select_most_consistent_guard(input)
