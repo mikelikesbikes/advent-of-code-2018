@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+day = ARGV.shift
+
+day_number = day.gsub(/\D+/, "")
+day_file_name = "day_#{day_number}.rb"
+day_spec_file_name = "day_#{day_number}_spec.rb"
+day_class_name = "Day#{day_number}"
+
+day_dir = File.expand_path("../../day-#{day_number}", __FILE__)
+
+require "fileutils"
+begin
+  FileUtils.mkdir(day_dir)
+  puts "created #{day_dir}"
+rescue Errno::EEXIST => e
+  puts e.message
+end
+
+def create_file(filepath, template)
+  File.open(filepath, File::WRONLY|File::CREAT|File::EXCL) do |file|
+    file << template
+  end
+  puts "created #{filepath}"
+rescue Errno::EEXIST => e
+  puts e.message
+end
+
+create_file(File.join(day_dir, day_file_name), <<~TEMPLATE)
+  module #{day_class_name}
+    extend self
+  end
+
+  return unless $PROGRAM_NAME == __FILE__
+
+  filename = ARGV.shift || File.expand_path("input.txt", __dir__)
+  input = File.read(filename).strip
+TEMPLATE
+
+create_file(File.join(day_dir, day_spec_file_name), <<~TEMPLATE)
+  require_relative "./#{day_file_name}"
+
+  describe #{day_class_name} do
+    let(:input) do
+      ""
+    end
+  end
+TEMPLATE
+
