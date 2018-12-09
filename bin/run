@@ -1,10 +1,7 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
 
-require "benchmark"
-include Benchmark
+RUBY_FILES=$(ls -A ./$1/*.rb 2>/dev/null | grep -v spec)
+[[ -n $RUBY_FILES ]] && time ruby $RUBY_FILES
 
-day = ARGV.shift.gsub(/\D/, "")
-
-puts(Benchmark.measure(CAPTION) do
-  puts %x(ruby day-#{day}/day_#{day}.rb)
-end)
+ELIXIR_FILES=$(ls -A ./$1/day*.exs 2>/dev/null | grep -v test)
+[[ -n $ELIXIR_FILES ]] && time elixir $ELIXIR_FILES
