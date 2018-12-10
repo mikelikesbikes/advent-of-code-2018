@@ -5,7 +5,7 @@ module MessageFinder
     [n, plot_message(points_of_light_at_tick(points_of_light, n))]
   end
 
-  def find_convergance_time(points_of_light, n = 0, m = 20_000)
+  def find_convergance_time(points_of_light, n = 0, m = 2**32)
     return m if m - n <= 1
     narea = covered_area_at_tick(points_of_light, n)
     marea = covered_area_at_tick(points_of_light, m)
