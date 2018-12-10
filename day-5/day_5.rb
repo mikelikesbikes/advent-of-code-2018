@@ -15,8 +15,12 @@ module AlchemicalReductor
   end
 
   def cancel_pairs(polymer)
-    :-@ while polymer.gsub!(SUBSTITUTIONS, "")
     polymer
+      .chars
+      .each_with_object([]) do |unit, stack|
+        stack.empty? || (unit.ord - stack[-1].ord).abs != 32 ? stack.push(unit) : stack.pop
+      end
+      .join
   end
 
   extend self
