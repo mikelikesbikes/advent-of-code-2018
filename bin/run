@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-RUBY_FILES=$(ls -A ./$1/*.rb 2>/dev/null | grep -v spec)
-[[ -n $RUBY_FILES ]] && time ruby $RUBY_FILES
+day=$1
+shift
 
-ELIXIR_FILES=$(ls -A ./$1/day*.exs 2>/dev/null | grep -v test)
-[[ -n $ELIXIR_FILES ]] && time elixir $ELIXIR_FILES
+RUBY_FILES=$(ls -A ./$day/*.rb 2>/dev/null | grep -v spec)
+[[ -n $RUBY_FILES ]] && time ruby $RUBY_FILES $@
+
+ELIXIR_FILES=$(ls -A ./$day/day*.exs 2>/dev/null | grep -v test)
+[[ -n $ELIXIR_FILES ]] && time elixir $ELIXIR_FILES $@
