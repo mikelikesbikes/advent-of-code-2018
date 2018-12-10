@@ -1,19 +1,23 @@
 module MessageFinder
   def run(input)
-    input
-      .map { |line| parse_point_of_light(line) }
-      .yield_self do |points_of_light|
-        next_area = 2**32 * 2**32
-        n = 0
-        n += 1 while (current_area = next_area) > (next_area = covered_area(points_of_light_at_tick(points_of_light, n)))
-        n -= 1
-
-        [n, plot_message(points_of_light_at_tick(points_of_light, n))]
-      end
+    points_of_light = input.map { |line| parse_point_of_light(line) }
+    n = find_convergance_time(points_of_light)
+    [n, plot_message(points_of_light_at_tick(points_of_light, n))]
   end
 
-  def covered_area(pol)
-    xs, ys = bounds(pol)
+  def find_convergance_time(points_of_light, n = 0, m = 20_000)
+    return m if m - n <= 1
+    narea = covered_area_at_tick(points_of_light, n)
+    marea = covered_area_at_tick(points_of_light, m)
+    if narea < marea
+      find_convergance_time(points_of_light, n, (m + n) / 2)
+    else
+      find_convergance_time(points_of_light, (m + n) / 2, m)
+    end
+  end
+
+  def covered_area_at_tick(pol, n)
+    xs, ys = bounds(points_of_light_at_tick(pol, n))
     xs.size * ys.size
   end
 
