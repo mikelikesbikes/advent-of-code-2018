@@ -5,6 +5,7 @@ class FuelIndicator
   end
 
   def fuel_level(x, y, size = 1)
+    # memoize the fuel level total for any square of any size on the grid
     @fuel_level ||= Hash.new do |hash, (x, y, size)|
       hash[[x, y, size]] =
         if size == 1
@@ -49,6 +50,7 @@ class FuelIndicator
   private
 
   def populate_fuel_totals(size)
+    # memoize which sizes have already been fully populated
     @populated_totals ||= Hash.new do |h, size|
       1.upto(300 - size).each do |y|
         1.upto(300 - size).each do |x|
