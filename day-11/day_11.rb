@@ -1,67 +1,69 @@
 class FuelIndicator
-  attr_reader :serial_number
-  def initialize(serial_number)
+  attr_reader :serial_number, :grid_size
+
+  def initialize(serial_number, grid_size = 300)
     @serial_number = serial_number
+    @grid_size = grid_size
   end
 
   def fuel_level(x, y, size = 1)
-    # memoize the fuel level total for any square of any size on the grid
-    @fuel_level ||= Hash.new do |hash, (x, y, size)|
-      hash[[x, y, size]] =
-        if size == 1
-          ((((((x + 10) * y) + serial_number) * (x + 10)) % 1000) / 100) - 5
-        elsif size.even?
-          lsize = size / 2
-          hash[[x,         y,         lsize]] +
-          hash[[x,         y + lsize, lsize]] +
-          hash[[x + lsize, y,         lsize]] +
-          hash[[x + lsize, y + lsize, lsize]]
-        elsif size.odd?
-          lsize = size / 2
-          rsize = size - lsize
-          hash[[x,         y,         lsize]] +
-          hash[[x,         y + lsize, rsize]] +
-          hash[[x + lsize, y,         rsize]] +
-          hash[[x + rsize, y + rsize, lsize]] -
-          hash[[x + lsize, y + lsize, 1]]
-        end
-    end
-    @fuel_level[[x, y, size]]
+    summed_area_table[[x - 1 + size, y - 1 + size]] +
+    summed_area_table[[x - 1       , y - 1       ]] -
+    summed_area_table[[x - 1 + size, y - 1       ]] -
+    summed_area_table[[x - 1       , y - 1 + size]]
   end
 
   def largest_total_power_block_for_size(size = 3)
     @largest_for_size ||= Hash.new do |h, size|
-      populate_fuel_totals(size)
-
-      h[size] = @fuel_level
-        .select { |(_, _, s), _| s == size }
-        .max_by { |_, v| v }
+      max_coord = [-1,-1]
+      max_total_power = -2**32
+      0.upto(grid_size - size) do |x|
+        0.upto(grid_size - size) do |y|
+          total_power = fuel_level(x, y, size)
+          if total_power > max_total_power
+            max_total_power = total_power
+            max_coord = [x, y]
+          end
+        end
+      end
+      h[size] = [max_coord, max_total_power]
     end
-
-    @largest_for_size[size].first
+    @largest_for_size[size]
   end
 
   def largest_total_power_block
-    (10..20).each { |size| largest_total_power_block_for_size(size) }
-    @largest_for_size
-      .max_by { |_, (_, v)| v }
+    (1..grid_size)
+      .lazy
+      .take_while do |size|
+        _, current_power = largest_total_power_block_for_size(size)
+        _, next_power = largest_total_power_block_for_size(size + 1)
+        current_power <= next_power
+      end
+      .to_a
       .last
-      .first
+      .succ
+      .yield_self do |size|
+        coord, _ = largest_total_power_block_for_size(size)
+        [*coord, size]
+      end
   end
 
   private
 
-  def populate_fuel_totals(size)
-    # memoize which sizes have already been fully populated
-    @populated_totals ||= Hash.new do |h, size|
-      1.upto(300 - size + 1).each do |y|
-        1.upto(300 - size + 1).each do |x|
-          fuel_level(x, y, size)
+  def summed_area_table
+    return @summed_area_table if @summed_area_table
+
+    @summed_area_table = Hash.new(0).tap do |table|
+      0.upto(grid_size - 1) do |y|
+        0.upto(grid_size - 1) do |x|
+          table[[x, y]] =
+            table[[x - 1, y    ]] +
+            table[[x    , y - 1]] -
+            table[[x - 1, y - 1]] +
+            ((((((x + 10) * y) + serial_number) * (x + 10)) % 1000) / 100) - 5
         end
       end
-      h[size] = true
     end
-    @populated_totals[size]
   end
 end
 
@@ -70,5 +72,5 @@ return unless $PROGRAM_NAME == __FILE__
 filename = ARGV.shift || File.expand_path("input.txt", __dir__)
 input = File.read(filename).strip.to_i
 
-puts FuelIndicator.new(input).largest_total_power_block_for_size(3).take(2).join(",")
+puts FuelIndicator.new(input).largest_total_power_block_for_size(3).first.join(",")
 puts FuelIndicator.new(input).largest_total_power_block.join(",")
