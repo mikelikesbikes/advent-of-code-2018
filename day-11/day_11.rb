@@ -5,37 +5,59 @@ class FuelIndicator
   end
 
   def fuel_level(x, y, size = 1)
-    @fuel_level ||= Hash.new do |size_hash, size|
-      size_hash[size] = Hash.new do |coord_hash, (x, y)|
-        coord_hash[[x, y]] = ((((((x + 10) * y) + serial_number) * (x + 10)) % 1000) / 100) - 5
-      end
+    @fuel_level ||= Hash.new do |hash, (x, y, size)|
+      hash[[x, y, size]] =
+        if size == 1
+          ((((((x + 10) * y) + serial_number) * (x + 10)) % 1000) / 100) - 5
+        elsif size.even?
+          lsize = size / 2
+          hash[[x,         y,         lsize]] +
+          hash[[x,         y + lsize, lsize]] +
+          hash[[x + lsize, y,         lsize]] +
+          hash[[x + lsize, y + lsize, lsize]]
+        elsif size.odd?
+          lsize = size / 2
+          rsize = size - lsize
+          hash[[x,         y,         lsize]] +
+          hash[[x,         y + lsize, rsize]] +
+          hash[[x + lsize, y,         rsize]] +
+          hash[[x + rsize, y + rsize, lsize]] -
+          hash[[x + lsize, y + lsize, 1]]
+        end
     end
-    @fuel_level[size][[x, y]]
-  end
-
-  def total_power((x, y), size)
-    total = 0
-    (0...size).each do |dx|
-      (0...size).each do |dy|
-        total += fuel_level(x + dx, y + dy)
-      end
-    end
-    total
+    @fuel_level[[x, y, size]]
   end
 
   def largest_total_power_block_for_size(size = 3)
-    totals = 1.upto(300 - size).each_with_object({}) do |y, totals|
-      1.upto(300 - size).each do |x|
-        totals[[x, y]] = total_power([x, y], size)
-      end
-    end
-    totals.max_by { |_, v| v }
+    populate_fuel_totals(size)
+
+    @fuel_level
+      .select { |(_, _, s), _| s == size }
+      .max_by { |_, v| v }
+      .first
+      .slice(0, 2)
   end
 
-  def largest_total_power_block
-    (1..50)
-      .map { |size| p [*largest_total_power_block_for_size(size), size] }
-      .max_by { |_, _, size| size }
+  def largest_total_power_block(lsize=1, rsize=300)
+    (10..18).each { |size| populate_fuel_totals(size) }
+
+    @fuel_level
+      .max_by { |_, size| size }
+      .first
+  end
+
+  private
+
+  def populate_fuel_totals(size)
+    @populated_totals ||= Hash.new do |h, size|
+      1.upto(300 - size).each do |y|
+        1.upto(300 - size).each do |x|
+          fuel_level(x, y, size)
+        end
+      end
+      h[size] = true
+    end
+    @populated_totals[size]
   end
 end
 
