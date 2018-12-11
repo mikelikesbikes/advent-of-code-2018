@@ -9,9 +9,9 @@ describe FuelIndicator do
   end
 
   it "finds the 3x3 square with the largest total power" do
-    expect(FuelIndicator.new(18).largest_total_power_block_for_size(3)).to eq [33, 45]
-    expect(FuelIndicator.new(18).largest_total_power_block_for_size(16)).to eq [90, 269]
-    expect(FuelIndicator.new(42).largest_total_power_block_for_size(12)).to eq [232, 251]
+    expect(FuelIndicator.new(18).largest_total_power_block_for_size(3).take(2)).to eq [33, 45]
+    expect(FuelIndicator.new(18).largest_total_power_block_for_size(16).take(2)).to eq [90, 269]
+    expect(FuelIndicator.new(42).largest_total_power_block_for_size(12).take(2)).to eq [232, 251]
   end
 
   it "finds the square of any size with the largest total power" do
