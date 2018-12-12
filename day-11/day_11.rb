@@ -68,5 +68,6 @@ return unless $PROGRAM_NAME == __FILE__
 filename = ARGV.shift || File.expand_path("input.txt", __dir__)
 input = File.read(filename).strip.to_i
 
-puts FuelIndicator.new(input).largest_total_power_block_for_size(3).first.join(",")
-puts FuelIndicator.new(input).largest_total_power_block.join(",")
+fuel_indicator = FuelIndicator.new(input)
+puts fuel_indicator.largest_total_power_block_for_size(3).first.join(",")
+puts fuel_indicator.largest_total_power_block.join(",")
