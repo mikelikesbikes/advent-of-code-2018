@@ -34,16 +34,12 @@ class FuelIndicator
   def largest_total_power_block
     (1..grid_size)
       .lazy
-      .take_while do |size|
-        _, current_power = largest_total_power_block_for_size(size)
-        _, next_power = largest_total_power_block_for_size(size + 1)
-        current_power <= next_power
+      .map { |size| largest_total_power_block_for_size(size) + [size] }
+      .reduce([nil, -2**32, nil, 0]) do |(mcoord, mpower, msize, n), (coord, power, size)|
+        break [mcoord, mpower, msize, n] if n > 5
+        mpower <= power ? [coord, power, size, 0] : [mcoord, mpower, msize, n + 1]
       end
-      .to_a
-      .last
-      .succ
-      .yield_self do |size|
-        coord, _ = largest_total_power_block_for_size(size)
+      .yield_self do |coord, _, size|
         [*coord, size]
       end
   end
