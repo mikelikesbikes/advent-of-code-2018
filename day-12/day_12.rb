@@ -25,8 +25,6 @@ class Garden
 
   def tick(n = 1)
     n.times do |i|
-      puts i if i % 1_000_000 == 0
-
       new_state = "." * @state.length
       (2...@state.length - 2).each do |i|
         new_state[i] = rules[@state.slice(i-2, 5)] || "."
@@ -36,6 +34,21 @@ class Garden
     end
 
     self
+  end
+
+  def sum_after_tick(n)
+    i = 0
+    sums = [live_plants.sum]
+    diffs = []
+    while i < n
+      i += 1
+      tick
+      sums << live_plants.sum
+      diffs << (sums[-1] - sums[-2])
+      break if diffs.length >= 100 && diffs.slice(-100..-1).uniq.length == 1
+    end
+
+    i == n ? sums.last : sums.last + ((n - i) * diffs.last)
   end
 
   private
@@ -51,5 +64,5 @@ return unless $PROGRAM_NAME == __FILE__
 filename = ARGV.shift || File.expand_path("input.txt", __dir__)
 input = File.read(filename).strip
 
-puts Garden.from_input(input).tick(20).live_plants.sum
-puts Garden.from_input(input).tick(50_000_000_000).live_plants.sum
+puts Garden.from_input(input).sum_after_tick(20)
+puts Garden.from_input(input).sum_after_tick(50_000_000_000)
