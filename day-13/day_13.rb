@@ -24,21 +24,14 @@ class Railway
   end
 
   def self.from_string(string)
-    rows = string.split("\n")
-    cars = []
-    track = rows.each_with_object({}).with_index do |(row, track), y|
+    track, cars = string.split("\n").each_with_object([{}, []]).with_index do |(row, (track, cars)), y|
       row.chars.each.with_index do |char, x|
-        case char
-        when "<", "^", ">", "v"
-          Car.new([x, y], char).tap do |car|
-            cars << car
-            track[[x,y]] = "."
+        track[[x, y]] =
+          case char
+          when "<", "^", ">", "v" then cars << Car.new([x, y], char) and "."
+          when "|", "-"       then "."
+          when "/", "\\", "+" then char
           end
-        when "/", "\\", "+"
-          track[[x,y]] = char
-        when "|", "-"
-          track[[x,y]] = "."
-        end
       end
     end
 
