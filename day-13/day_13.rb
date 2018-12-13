@@ -1,9 +1,11 @@
 class Railway
-  attr_reader :track, :cars, :crashes
+  attr_reader :track, :cars, :crashes, :ticks
+
   def initialize(track, cars)
     @track = track
     @cars = cars
     @crashes = []
+    @ticks = 0
   end
 
   def first_crash_location
@@ -54,15 +56,20 @@ class Railway
           cars.delete(other_car)
         end
       end
+    @ticks += 1
   end
 
   class Car
-    attr_reader :direction
+    DIRECTIONS = %w[ ^ > v < ]
 
     def initialize(current_location, direction)
       @x, @y = current_location
-      @direction = direction
+      @direction_offset = DIRECTIONS.index(direction)
       @intersection_offset = 0
+    end
+
+    def direction
+      DIRECTIONS[@direction_offset % 4]
     end
 
     def inspect
@@ -71,16 +78,7 @@ class Railway
 
     def tick(track)
       change_direction_if_needed(track)
-      case direction
-      when "v"
-        @y += 1
-      when "^"
-        @y -= 1
-      when ">"
-        @x += 1
-      when "<"
-        @x -= 1
-      end
+      move_forward
     end
 
     def location
@@ -89,20 +87,25 @@ class Railway
 
     private
 
+    def move_forward
+      case direction_index
+      when 0 then @y -= 1
+      when 1 then @x += 1
+      when 2 then @y += 1
+      when 3 then @x -= 1
+      end
+    end
+
     def change_direction_if_needed(track)
       if track[location] == "/"
-        case direction
-        when "^" then turn_right
-        when ">" then turn_left
-        when "v" then turn_right
-        when "<" then turn_left
+        case direction_index
+        when 0, 2 then turn_right
+        when 1, 3 then turn_left
         end
       elsif track[location] == "\\"
-        case direction
-        when "^" then turn_left
-        when ">" then turn_right
-        when "v" then turn_left
-        when "<" then turn_right
+        case direction_index
+        when 0, 2 then turn_left
+        when 1, 3 then turn_right
         end
       elsif track[location] == "+"
         case @intersection_offset % 3
@@ -113,22 +116,16 @@ class Railway
       end
     end
 
+    def direction_index
+      @direction_offset % 4
+    end
+
     def turn_left
-      @direction = case direction
-      when "^" then "<"
-      when "<" then "v"
-      when "v" then ">"
-      when ">" then "^"
-      end
+      @direction_offset -= 1
     end
 
     def turn_right
-      @direction = case direction
-      when "^" then ">"
-      when ">" then "v"
-      when "v" then "<"
-      when "<" then "^"
-      end
+      @direction_offset += 1
     end
   end
 end
