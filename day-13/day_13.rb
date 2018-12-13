@@ -50,15 +50,23 @@ class Railway
       .sort_by { |c| c.location.reverse }
       .each do |car|
         car.tick(track)
-        if other_car = cars.find { |c| c != car && c.location == car.location }
-          crashes << car.location
-          cars.delete(car)
-          cars.delete(other_car)
-        end
+        handle_crash_if_needed(car)
       end
     @ticks += 1
   end
 
+  private
+
+  def handle_crash_if_needed(car)
+    if other_car = cars.find { |c| c != car && c.location == car.location }
+      crashes << car.location
+      cars.delete(car)
+      cars.delete(other_car)
+    end
+  end
+end
+
+class Railway
   class Car
     DIRECTIONS = %w[ ^ > v < ]
 
