@@ -61,11 +61,10 @@ class BeverageCombat
           .each { |open_cell| s << open_cell }
       end
 
-    next_position = in_range
-      .map { |space| step_on_shortest_path(unit.position, space) }
-      .compact
-      .min_by { |distance, (x, y)| [distance, y, x] }
-      &.last
+    chosen_space = reachable(unit.position, in_range)
+    return false unless chosen_space
+
+    next_position = step_on_shortest_path(unit.position, chosen_space)
 
     return false unless next_position
 
@@ -74,6 +73,14 @@ class BeverageCombat
     map[oldy][oldx] = OPEN_SPACE
     map[newy][newx] = unit.type
     true
+  end
+
+  def reachable(space, spaces)
+    spaces
+      .map { |other| [other, distance(space, other)] }
+      .select { |_, dist| dist }
+      .min_by { |space, (d, (x, y))| [d, y, x] }
+      &.first
   end
 
   def distance(this, other)
@@ -105,27 +112,23 @@ class BeverageCombat
   def step_on_shortest_path(this, other)
     visited = Set.new
     to_visit = Set.new([other])
-    distance = 0
+    adjacents = Set.new
 
-    until to_visit.empty?
+    while !to_visit.empty? && adjacents.empty?
       to_visit = to_visit
         .sort_by { |(x, y)| [y, x] }
         .each_with_object(Set.new) do |current_space, s|
-        unless visited.member?(current_space)
           visited << current_space
           adjacent_spaces = spaces_adjacent_to(current_space)
 
-          return [distance, current_space] if adjacent_spaces.include?(this)
-
           adjacent_spaces.each do |space|
+            adjacents << current_space if space == this
             s << space if map(space) == OPEN_SPACE
           end
         end
-      end
-      distance += 1
     end
 
-    nil
+    adjacents.sort_by(&:reverse).first
   end
 
   def map(position = nil)
