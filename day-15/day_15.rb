@@ -50,21 +50,27 @@ class BeverageCombat
     attack(unit)
   end
 
+  def enemies_adjacent_to(unit)
+    adjacent_spaces = spaces_adjacent_to(unit.position)
+    enemies_of(unit)
+      .select { |enemy| adjacent_spaces.include?(enemy.position) }
+  end
+
   def move(unit)
-    enemy_positions = enemies_of(unit).map { |enemy| enemy.position }
-    return false if spaces_adjacent_to(unit.position).any? { |space| enemy_positions.include?(space) }
+    return false unless enemies_adjacent_to(unit).empty?
 
     in_range = enemies_of(unit)
-      .each_with_object(Set.new) do |enemy, s|
-        open_spaces_adjacent_to(enemy.position)
-          .select { |space| map(space) == OPEN_SPACE }
-          .each { |open_cell| s << open_cell }
+      .map { |enemy| open_spaces_adjacent_to(enemy.position) }
+      .reduce(Set.new, :union)
+
+    next_position = in_range
+      .map do |space|
+        d, step = distance(unit.position, space)
+        [d, space, step]
       end
-
-    chosen_space = reachable(unit.position, in_range)
-    return false unless chosen_space
-
-    next_position = step_on_shortest_path(unit.position, chosen_space)
+      .select { |d, _| d }
+      .min_by { |d, space, step| [d, *space.reverse, *step.reverse] }
+      &.last
 
     return false unless next_position
 
@@ -157,9 +163,7 @@ class BeverageCombat
   end
 
   def attack(unit)
-    adjacent_spaces = spaces_adjacent_to(unit.position)
-    target = enemies_of(unit)
-      .select { |enemy| adjacent_spaces.include?(enemy.position) }
+    target = enemies_adjacent_to(unit)
       .min_by { |enemy| [enemy.hit_points, *enemy.position.reverse] }
 
     return false unless target
