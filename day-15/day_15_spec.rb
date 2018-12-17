@@ -187,5 +187,65 @@ describe BeverageCombat do
       expect(BeverageCombat.from_string(input).outcome).to eq expected_outcome.to_i
     end
   end
+
+  examples = <<~INPUT.strip.split("\n\n").each_slice(2)
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+
+4988
+
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+
+31284
+
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+
+3478
+
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+
+6474
+
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+
+1140
+  INPUT
+
+  examples.each do |input, expected_outcome|
+    it "calculates the final outcome of a battle" do
+      expect(BeverageCombat.flawless_outcome(input)).to eq expected_outcome.to_i
+    end
+  end
 end
 

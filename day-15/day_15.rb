@@ -8,14 +8,24 @@ class BeverageCombat
   def initialize(map, units)
     @map = map
     @units = units
+    @initial_elf_count = elf_count
+    @rounds = 0
   end
 
   def outcome
-    rounds = 0
     until battle_over?
-      rounds += 1 if round
+      @rounds += 1 if round
     end
-    units.sum(&:hit_points) * rounds
+    units.sum(&:hit_points) * @rounds
+  end
+
+  def elf_count
+    units.count { |u| u.type == "E" }
+  end
+
+  def flawless_outcome
+    result = outcome
+    elf_count == @initial_elf_count ? result : nil
   end
 
   def battle_over?
@@ -177,21 +187,42 @@ class BeverageCombat
     end
   end
 
-  def self.from_string(input)
+  def self.from_string(input, elf_attack_points = 3)
     map = input.split("\n").map { |line| line.chars }
     units = map.each_with_object([]).with_index do |(row, units), y|
       row.each_with_index do |s, x|
-        units << Unit.new(s, [x, y]) unless s == OPEN_SPACE || s == WALL_SPACE
+        if s == "E"
+          units << Unit.new(s, [x, y], attack_points: elf_attack_points)
+        elsif s == "G"
+          units << Unit.new(s, [x, y])
+        end
       end
     end
 
     new(map, units)
   end
 
+  def self.flawless_outcome(input)
+    min = 1
+    max = 200
+
+    while max - min > 1
+      mid = (max + min + 1) / 2
+      game = from_string(input, mid)
+      if game.flawless_outcome
+        max = mid
+      else
+        min = mid
+      end
+    end
+
+    game.outcome
+  end
+
   class Unit
     attr_reader :type, :attack_points
     attr_accessor :position, :hit_points
-    def initialize(type, position, hit_points = 200, attack_points = 3)
+    def initialize(type, position, hit_points: 200, attack_points: 3)
       @type = type
       @hit_points = hit_points
       @attack_points = attack_points
@@ -200,7 +231,7 @@ class BeverageCombat
 
     def inspect
       nice_type = type == "E" ? "Elf" : "Goblin"
-      "<##{nice_type} position=#{position.join(",")} hit_points=#{hit_points}>"
+      "<##{nice_type} position=#{position.join(",")} hit_points=#{hit_points} attack_points=#{attack_points}>"
     end
   end
 end
@@ -211,3 +242,4 @@ filename = ARGV.shift || File.expand_path("input.txt", __dir__)
 input = File.read(filename).strip
 
 puts BeverageCombat.from_string(input).outcome
+puts BeverageCombat.flawless_outcome(input)
