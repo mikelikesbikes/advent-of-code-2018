@@ -137,52 +137,32 @@ class Diviner
         right = [x + 1, y]
 
         new_leaves = []
-
-        if !@down
-          # if a stream has never gone down, then attempt to go down first
-          if !map[below]
-            @down = true
-            # move the current node forward
-            self.pos = below
-            new_leaves << self
-          elsif !map[left] || !map[right]
-            if !map[left]
-              self.pos = left
-              new_leaves << self
+        if !map[below]
+          new_leaves << split(below)
+        elsif !map[left] || !map[right]
+          new_leaves << split(left) if !map[left]
+          new_leaves << split(right) if !map[right]
+        else
+          parent.join(self)
+          #don't go up unless walls on both sides
+          i = 0
+          lwall = rwall = false
+          lopen = ropen = false
+          until (lwall || lopen) && (rwall || ropen)
+            p [pos, i, map[[x-i,y]], map[[x+i,y]], lwall, lopen, rwall, ropen]
+            i += 1
+            case map[[x - i, y]]
+            when "#" then lwall = true
+            when nil then lopen = true
             end
-            if !map[right]
-              self.pos = right
-              new_leaves << self
+            case map[[x + i, y]]
+            when "#" then rwall = true
+            when nil then ropen = true
             end
-          else
-            self.parent.join(self)
-            if self.parent.children.empty?
-              px, py = self.parent.pos
-              self.parent.pos = [px, py - 1]
-              new_leaves << self.parent
-            end
+            raise "WTF" if i > 1000
           end
-        elsif @down
-          if !map[below]
-            self.pos = below
-            new_leaves << self
-          elsif !map[left] || !map[right]
-            if !map[left]
-              node = self.split(left)
-              new_leaves << node
-            end
-            if !map[right]
-              node = self.split(right)
-              new_leaves << node
-            end
-          else
-            self.parent.join(self)
-            if self.parent.children.empty?
-              px, py = self.parent.pos
-              self.parent.pos = [px, py - 1]
-              new_leaves << self.parent
-            end
-          end
+          require 'pry'; binding.pry if x == 500
+          new_leaves << parent if parent.children.empty? && lwall && rwall
         end
 
         new_leaves.each { |node| map[node.pos] = "|" }

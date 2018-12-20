@@ -102,7 +102,7 @@ describe Diviner do
     end
 
     it "fills upwards" do
-      15.times { diviner.flow }
+      19.times { diviner.flow }
 
       expect(diviner.to_s).to eq <<~EXPECTED.strip
         ......+.......
@@ -123,7 +123,7 @@ describe Diviner do
     end
 
     it "fills upwards" do
-      57.times { diviner.flow }
+      80.times { diviner.flow }
 
       expect(diviner.to_s).to eq <<~EXPECTED.strip
         ......+.......
@@ -175,7 +175,7 @@ describe Diviner do
         y=5, x=501..505
       INPUT
 
-      60.times { diviner.flow }
+      88.times { diviner.flow }
 
       expect(diviner.to_s).to eq <<~EXPECTED.strip
        ...+.........
@@ -186,6 +186,37 @@ describe Diviner do
        |#||#####||#|
        |#|||||||||#|
        |###########|
+      EXPECTED
+    end
+
+    it "doesn't fill between streams" do
+      diviner = Diviner.from_string(<<~INPUT.strip)
+        y=2, x=498..502
+        x=496, y=5..6
+        x=498, y=5..6
+        y=6, x=496..498
+        x=502, y=5..6
+        x=504, y=5..6
+        y=6, x=502..504
+        x=494, y=9..10
+        x=506, y=9..10
+        y=10, x=494..506
+      INPUT
+
+      100.times { diviner.flow }
+
+      expect(diviner.to_s).to eq <<~EXPECTED.strip
+        .......+.......
+        ....|||||||....
+        ....|#####|....
+        ....|.....|....
+        ..|||||.|||||..
+        ..|#|#|.|#|#|..
+        ..|###|.|###|..
+        ..|...|.|...|..
+        |||||||||||||||
+        |#|||||||||||#|
+        |#############|
       EXPECTED
     end
   end
