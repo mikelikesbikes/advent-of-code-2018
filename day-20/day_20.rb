@@ -1,21 +1,51 @@
 module NorthPole
   class Map
-    def initialize(root)
-      @root = root
+    def initialize(map, distances)
+      @map = map
+      @distances = distances
     end
 
     def longest_path
-      @root.longest_path
+      @distances.values.max
     end
 
     def paths_with_at_least_n_steps(n)
-      @root.paths_with_at_least_n_steps(n)
+      @distances.values.count { |v| v >= n }
     end
 
     def self.from_regex(str)
-      remove_empty_options(str)
-      str.slice!(/^\^/)
-      self.new(Node.from_str(str))
+      rooms = []
+      room = [0, 0]
+      map = Hash.new { |h, k| h[k] = [] }
+      distances = Hash.new
+      directions = {
+        "N" => [0, -1],
+        "E" => [1, 0],
+        "S" => [0, 1],
+        "W" => [-1, 0]
+      }
+
+      str.chars.each do |c|
+        case c
+        when "^", "$"
+          next
+        when "("
+          rooms.push(room)
+        when ")"
+          room = rooms.pop
+        when "|"
+          room = rooms.last
+        when "N", "E", "S", "W"
+          new_room = room.zip(directions[c]).map(&:sum)
+          map[new_room] << room
+          new_distance = distances.fetch(room, 0) + 1
+          current_distance = distances.fetch(new_room, nil)
+          distances[new_room] = new_distance if !current_distance || new_distance < current_distance
+          room = new_room
+        end
+      end
+
+      new(map, distances)
     end
 
     def self.remove_empty_options(str)
